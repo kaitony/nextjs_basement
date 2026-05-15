@@ -11,6 +11,8 @@ Next.js 16 기반의 최신 SSR/SSG 프로젝트 템플릿입니다.
 - **Turbopack** - 초고속 빌드 도구 및 HMR
 - **React Compiler** - 자동 메모이제이션 최적화
 - **shadcn/ui** - 재사용 가능한 UI 컴포넌트
+- **Vitest** - 빠르고 현대적인 테스트 프레임워크
+- **Zustand** - 가볍고 확장 가능한 상태 관리
 - **HTTPS 개발 환경** - 로컬 개발 시 HTTPS 지원
 
 ## 📁 프로젝트 구조
@@ -81,6 +83,11 @@ nextjs_basement/
 - **빌드 도구**: Turbopack
 - **린팅**: ESLint 9, Prettier
 - **컴파일러**: React Compiler (Babel Plugin)
+- **테스팅**: Vitest 4.1, @testing-library/react
+
+### 상태 관리
+
+- **Zustand**: 가볍고 간단한 상태 관리 라이브러리
 
 ## 📦 설치 및 실행
 
@@ -121,6 +128,22 @@ yarn start
 
 ```bash
 yarn lint
+```
+
+### 테스트 실행
+
+```bash
+# 테스트 실행
+yarn test
+
+# Watch 모드로 테스트
+yarn test:watch
+
+# Coverage 리포트 생성
+yarn test:coverage
+
+# UI 모드로 테스트
+yarn test:ui
 ```
 
 ## 🎯 Next.js 16 주요 기능
@@ -212,6 +235,129 @@ import { Button } from "@/components/ui/button";
 export default function Page() {
   return <Button variant="default">Click me</Button>;
 }
+```
+
+## 🧪 테스팅
+
+Vitest와 Testing Library를 사용하여 견고한 테스트 환경을 제공합니다.
+
+### 테스트 구조
+
+```
+src/
+├── components/__tests__/    # 컴포넌트 테스트
+├── lib/__tests__/           # 유틸리티 함수 테스트
+├── states/__tests__/        # 상태 관리 테스트
+└── utils/__tests__/         # API 유틸리티 테스트
+```
+
+### 테스트 작성 예시
+
+**컴포넌트 테스트**
+
+```tsx
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import { Spinner } from "../spinner";
+
+describe("Spinner", () => {
+  it("renders without crashing", () => {
+    render(<Spinner />);
+    const spinner = screen.getByRole("status");
+    expect(spinner).toBeInTheDocument();
+  });
+});
+```
+
+**유틸리티 함수 테스트**
+
+```tsx
+import { describe, it, expect } from "vitest";
+import { cn } from "../utils";
+
+describe("cn utility", () => {
+  it("merges class names correctly", () => {
+    const result = cn("base-class", "additional-class");
+    expect(result).toBe("base-class additional-class");
+  });
+});
+```
+
+### 테스트 명령어
+
+```bash
+# 모든 테스트 실행
+yarn test
+
+# Watch 모드 (개발 중 실시간 테스트)
+yarn test:watch
+
+# Coverage 리포트 생성
+yarn test:coverage
+
+# UI 모드로 테스트 (브라우저)
+yarn test:ui
+```
+
+### 테스트 모범 사례
+
+- ✅ 새로운 기능 추가 시 테스트 함께 작성
+- ✅ 기존 코드 변경 시 관련 테스트 확인
+- ✅ 커밋 전 `yarn test` 실행
+- ✅ Edge case와 에러 처리에 집중
+- ✅ 구현이 아닌 동작(behavior) 테스트
+
+## 🗂️ 상태 관리 (Zustand)
+
+Zustand를 사용하여 간단하고 효율적인 전역 상태 관리를 제공합니다.
+
+### 스토어 생성 예시
+
+```tsx
+// src/states/counterStore.ts
+import { create } from "zustand";
+
+interface CounterState {
+  count: number;
+  increment: () => void;
+  decrement: () => void;
+  reset: () => void;
+}
+
+export const useCounterStore = create<CounterState>((set) => ({
+  count: 0,
+  increment: () => set((state) => ({ count: state.count + 1 })),
+  decrement: () => set((state) => ({ count: state.count - 1 })),
+  reset: () => set({ count: 0 }),
+}));
+```
+
+### 컴포넌트에서 사용
+
+```tsx
+"use client";
+
+import { useCounterStore } from "@/states/counterStore";
+
+export default function Counter() {
+  const { count, increment, decrement } = useCounterStore();
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={increment}>+</button>
+      <button onClick={decrement}>-</button>
+    </div>
+  );
+}
+```
+
+### 선택적 구독 (성능 최적화)
+
+```tsx
+// 필요한 상태만 구독
+const count = useCounterStore((state) => state.count);
+const increment = useCounterStore((state) => state.increment);
 ```
 
 ## 🔧 주요 설정
